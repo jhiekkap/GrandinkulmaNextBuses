@@ -24,3 +24,38 @@ function App() {
 }
 
 export default App;
+
+// new Date(1603054800000).toLocaleString('fi-FI')
+// * 1000!
+/* 
+{
+  stops(name: "Grandinkulma") {
+    gtfsId
+    name
+    code
+    lat
+    lon
+     stoptimesWithoutPatterns {
+      scheduledArrival
+      realtimeArrival
+      arrivalDelay
+      scheduledDeparture
+      realtimeDeparture
+      departureDelay
+      realtime
+      realtimeState
+      serviceDay
+      headsign
+      realtimeArrival
+      trip{
+        route{
+          longName
+        }
+        tripShortName
+        routeShortName
+      }
+      
+    }
+  }
+}
+*/
