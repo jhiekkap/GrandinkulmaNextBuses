@@ -1,33 +1,15 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
+import { ApolloClient, HttpLink, InMemoryCache, gql } from '@apollo/client'
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
-}
+const client = new ApolloClient({
+  cache: new InMemoryCache(),
+  link: new HttpLink({
+    uri: 'https://api.digitransit.fi/routing/v1/routers/hsl/index/graphql',
+  })
+})
 
-export default App;
-
-// new Date(1603054800000).toLocaleString('fi-FI')
-// * 1000!
-/* 
+export const grandinKulmaQuery = gql`
 {
   stops(name: "Grandinkulma") {
     gtfsId
@@ -53,9 +35,29 @@ export default App;
         }
         tripShortName
         routeShortName
-      }
-      
+      } 
     }
   }
 }
-*/
+`
+
+function App() {
+
+  const getNextBuses = async () => {
+    const result = await client.query({ query: grandinKulmaQuery })
+    console.log('QUERY RESULT: ', result.data.stops[0].stoptimesWithoutPatterns)
+  }
+
+  return (
+    <div className="App">
+      <button onClick={() => getNextBuses()}>GET NEXT BUSES</button>
+    </div>
+  );
+}
+
+export default App;
+
+// new Date(1603054800000).toLocaleString('fi-FI')
+// * 1000!
+/*
+ 
