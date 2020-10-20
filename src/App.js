@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import './App.css';
-import { ApolloClient, HttpLink, InMemoryCache, gql } from '@apollo/client'
-import { useInterval } from './hooks'
+import { ApolloClient, HttpLink, InMemoryCache, gql } from '@apollo/client';
+import { useInterval } from './hooks';
 
 const client = new ApolloClient({
   cache: new InMemoryCache(),
   link: new HttpLink({
     uri: 'https://api.digitransit.fi/routing/v1/routers/hsl/index/graphql',
   })
-})
+});
 
 export const grandinKulmaQuery = gql`
 {
@@ -42,32 +42,41 @@ export const grandinKulmaQuery = gql`
 }
 `
 
-const getTime = (date) => date.split(' ')[4]
 
 function App() {
 
-  const [nextBuses, setNextBuses] = useState([])
+  const [nextBuses, setNextBuses] = useState([]);
+  const [isRealTime, setRealTime] = useState(false);
+
+  const getTime = (date) => date.split(' ')[4];
+  const delayToString = (delay) => {
+    const delayAbs = Math.abs(delay)
+    let minutes = Math.floor(delayAbs / 60);
+    console.log('MINUTES', minutes)
+    minutes = minutes === 0 ? '00' : (minutes < 10 ? '0' + minutes : minutes)
+    let seconds = delayAbs < 10 ? '0' + delayAbs : delayAbs
+    return `${delay < 0 ? '-' : ''}${minutes}:${seconds}`
+  }
 
   const getNextBuses = async () => {
     const result = await client.query({ query: grandinKulmaQuery })
     const stopTimes = result.data.stops[0].stoptimesWithoutPatterns
+    setRealTime(Boolean(nextBuses.find(bus => bus.realtime)))
+    setNextBuses(stopTimes)
     console.log(new Date(), 'STOP TIMES: ', stopTimes)
-    setNextBuses(stopTimes) 
   }
 
   useInterval(() => {
     getNextBuses()
-  }, 2000)
+  }, 10000)
 
-
-  console.log('NEXT BUSES', nextBuses)
-  const hasRealTime = nextBuses.find(bus => bus.realtime) 
-  console.log('HAS REAL TIME', hasRealTime)
-
+  //console.log('NEXT BUSES', nextBuses)
+  //console.log('IS REAL TIME', isRealTime)
 
   return (
     <div className="App">
       <h2>Grandinkulman pysäkin (V6121) bussien tulo- ja lähtöajat</h2>
+      <h3>{`Pysäkillä ${isRealTime ? 'on ' : 'ei ole '} reaaliaikai${isRealTime ? 'nen' : 'sta'} näyttö${!isRealTime ? 'ä' : ''}`}</h3>
       <table>
         <thead>
           <tr>
@@ -77,25 +86,25 @@ function App() {
             <td>
               Reitti
             </td>
-            <td>
-              Tosiaikainen näyttö
+            <td className="hideMobile">
+              Reaaliaikainen näyttö
             </td>
             <td>
               Aikataulun mukainen tuloaika
             </td>
-            {hasRealTime && <td>
+            {isRealTime && <td>
               Arvioitu tuloaika
             </td>}
-            {hasRealTime && <td>
+            {isRealTime && <td>
               Tuloaika myöhässä
             </td>}
             <td>
               Aikataulun mukainen lähtöaika
             </td>
-            {hasRealTime && <td>
+            {isRealTime && <td>
               Arvioitu lähtöaika
             </td>}
-            {hasRealTime && <td>
+            {isRealTime && <td>
               Lähtöaika myöhässä
             </td>}
           </tr>
@@ -108,17 +117,17 @@ function App() {
             //const localizedServiceDay = new Date(localizedServiceDayInMs)
             //console.log('SERVICE DAY IN FINNISH TIME', localizedServiceDay, localizedServiceDay1)
             const scheduledArrival = getTime(new Date(serviceDayInMs + bus.scheduledArrival * 1000).toString())
-            console.log('SCHEDULED ARRIVAL', scheduledArrival)
+            //console.log('SCHEDULED ARRIVAL', scheduledArrival)
             const realtimeArrival = getTime(new Date(serviceDayInMs + bus.realtimeArrival * 1000).toString())
-            console.log('REAL TIME ARRIVAL', realtimeArrival)
-            const arrivalDelay = getTime(new Date(serviceDayInMs + bus.arrivalDelay * 1000).toString())
-            console.log('ARRIVAL DELAY ', arrivalDelay)
+            //console.log('REAL TIME ARRIVAL', realtimeArrival)
+            const arrivalDelay = delayToString(bus.arrivalDelay)
+            //console.log('ARRIVAL DELAY ', arrivalDelay)
             const scheduledDeparture = getTime(new Date(serviceDayInMs + bus.scheduledDeparture * 1000).toString())
-            console.log('SCHEDULED DEPARTURE', scheduledDeparture)
+            //console.log('SCHEDULED DEPARTURE', scheduledDeparture)
             const realtimeDeparture = getTime(new Date(serviceDayInMs + bus.realtimeDeparture * 1000).toString())
-            console.log('REAL TIME DEPARTURE', realtimeDeparture)
-            const departureDelay = getTime(new Date(serviceDayInMs + bus.departureDelay * 1000).toString())
-            console.log('DEPARTURE DELAY ', departureDelay)
+            //console.log('REAL TIME DEPARTURE', realtimeDeparture)
+            const departureDelay = delayToString(bus.departureDelay)
+            //console.log('DEPARTURE DELAY ', departureDelay)
 
             return <tr key={i}>
               <td>
@@ -127,25 +136,25 @@ function App() {
               <td>
                 {bus.trip.route.longName}
               </td>
-              <td>
+              <td className="hideMobile">
                 {bus.trip.realtime ? 'KYLLÄ' : 'EI'}
               </td>
               <td>
                 {scheduledArrival}
               </td>
-              {hasRealTime && <td>
+              {isRealTime && <td>
                 {realtimeArrival}
               </td>}
-              {hasRealTime && <td>
+              {isRealTime && <td>
                 {arrivalDelay}
               </td>}
               <td>
                 {scheduledDeparture}
               </td>
-              {hasRealTime && <td>
+              {isRealTime && <td>
                 {realtimeDeparture}
               </td>}
-              {hasRealTime && <td>
+              {isRealTime && <td>
                 {departureDelay}
               </td>}
             </tr>

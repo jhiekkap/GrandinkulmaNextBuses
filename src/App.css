@@ -6,15 +6,23 @@
   padding: 5% 20%; 
 }
 
-@media only screen and (max-width: 600px) {
+@media only screen and (max-width: 1200px) {
    .App {
     padding: 1%;
+    font-size: 12px;
    } 
+
+   .hideMobile {
+    display: none;
+  }
  }
  
 td {
    background-color: turquoise;
+   padding: 3px;
  }
+
+
 
  
  
