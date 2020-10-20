@@ -1,8 +1,14 @@
 .App {
   text-align: center;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  padding: 5% 20%;
 }
 
- td {
+
+
+td {
    background-color: turquoise;
  }
 

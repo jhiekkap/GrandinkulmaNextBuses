@@ -52,7 +52,7 @@ function App() {
     const result = await client.query({ query: grandinKulmaQuery })
     const stopTimes = result.data.stops[0].stoptimesWithoutPatterns
     console.log(new Date(), 'STOP TIMES: ', stopTimes)
-    setNextBuses(stopTimes)
+    setNextBuses(stopTimes) 
   }
 
   useInterval(() => {
@@ -61,12 +61,13 @@ function App() {
 
 
   console.log('NEXT BUSES', nextBuses)
-
+  const hasRealTime = nextBuses.find(bus => bus.realtime) 
+  console.log('HAS REAL TIME', hasRealTime)
 
 
   return (
     <div className="App">
-      {/* <button onClick={() => getNextBuses()}>HAE SEURAAVAT BUSSIT</button> */}
+      <h2>Grandinkulman pysäkin (V6121) bussien tulo- ja lähtöajat</h2>
       <table>
         <thead>
           <tr>
@@ -77,26 +78,26 @@ function App() {
               Reitti
             </td>
             <td>
-              Tosiaikainen
+              Tosiaikainen näyttö
             </td>
             <td>
               Aikataulun mukainen tuloaika
             </td>
-            <td>
+            {hasRealTime && <td>
               Arvioitu tuloaika
-            </td>
-            <td>
+            </td>}
+            {hasRealTime && <td>
               Tuloaika myöhässä
-            </td>
+            </td>}
             <td>
               Aikataulun mukainen lähtöaika
             </td>
-            <td>
+            {hasRealTime && <td>
               Arvioitu lähtöaika
-            </td>
-            <td>
+            </td>}
+            {hasRealTime && <td>
               Lähtöaika myöhässä
-            </td>
+            </td>}
           </tr>
         </thead>
         <tbody>
@@ -118,7 +119,7 @@ function App() {
             console.log('REAL TIME DEPARTURE', realtimeDeparture)
             const departureDelay = getTime(new Date(serviceDayInMs + bus.departureDelay * 1000).toString())
             console.log('DEPARTURE DELAY ', departureDelay)
-              
+
             return <tr key={i}>
               <td>
                 {bus.trip.routeShortName}
@@ -132,26 +133,25 @@ function App() {
               <td>
                 {scheduledArrival}
               </td>
-              <td>
+              {hasRealTime && <td>
                 {realtimeArrival}
-              </td>
-              <td>
+              </td>}
+              {hasRealTime && <td>
                 {arrivalDelay}
-              </td>
+              </td>}
               <td>
                 {scheduledDeparture}
               </td>
-              <td>
+              {hasRealTime && <td>
                 {realtimeDeparture}
-              </td>
-              <td>
+              </td>}
+              {hasRealTime && <td>
                 {departureDelay}
-              </td>
+              </td>}
             </tr>
           })}
         </tbody>
       </table>
-
     </div>
   );
 }
