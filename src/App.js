@@ -1,18 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 import { ApolloClient, HttpLink, InMemoryCache, gql } from '@apollo/client';
 import { useInterval } from './hooks';
 
-const client = new ApolloClient({
-  cache: new InMemoryCache(),
-  link: new HttpLink({
-    uri: 'https://api.digitransit.fi/routing/v1/routers/hsl/index/graphql',
-  })
-});
+
 
 export const grandinKulmaQuery = gql`
 {
-  stops(name: "Grandinkulma") {
+  stops(name: "Sörnäinen") {
     gtfsId
     name
     code
@@ -46,37 +41,49 @@ export const grandinKulmaQuery = gql`
 function App() {
 
   const [nextBuses, setNextBuses] = useState([]);
-  const [isRealTime, setRealTime] = useState(false);
+
+   useInterval(() => {
+     getNextBuses()
+   }, 2000)
 
   const getTime = (date) => date.split(' ')[4];
   const delayToString = (delay) => {
     const delayAbs = Math.abs(delay)
     let minutes = Math.floor(delayAbs / 60);
-    console.log('MINUTES', minutes)
+    //console.log('MINUTES', minutes)
     minutes = minutes === 0 ? '00' : (minutes < 10 ? '0' + minutes : minutes)
-    let seconds = delayAbs < 10 ? '0' + delayAbs : delayAbs
-    return `${delay < 0 ? '-' : ''}${minutes}:${seconds}`
+    let seconds = delayAbs < 10 ? '0' + delayAbs : delayAbs > 59 ? (delayAbs % 60 < 10 ? '0' + delayAbs % 60 : delayAbs % 60) : delayAbs
+    return `${delay < 0 ? '+' : ''}${minutes}:${seconds}`
   }
 
   const getNextBuses = async () => {
+    const client = new ApolloClient({
+      cache: new InMemoryCache(),
+      link: new HttpLink({
+        uri: 'https://api.digitransit.fi/routing/v1/routers/hsl/index/graphql',
+      })
+    });
     const result = await client.query({ query: grandinKulmaQuery })
     const stopTimes = result.data.stops[0].stoptimesWithoutPatterns
-    setRealTime(Boolean(nextBuses.find(bus => bus.realtime)))
     setNextBuses(stopTimes)
     console.log(new Date(), 'STOP TIMES: ', stopTimes)
   }
 
-  useInterval(() => {
+
+  useEffect(() => {
     getNextBuses()
-  }, 10000)
+  }, [])
+
+  const isRealTime = Boolean(nextBuses.find(bus => bus.realtime))
 
   //console.log('NEXT BUSES', nextBuses)
   //console.log('IS REAL TIME', isRealTime)
 
   return (
     <div className="App">
+      {/* <button onClick={() => getNextBuses()}>Päivitä</button> */}
       <h2>Grandinkulman pysäkin (V6121) bussien tulo- ja lähtöajat</h2>
-      <h3>{`Pysäkillä ${isRealTime ? 'on ' : 'ei ole '} reaaliaikai${isRealTime ? 'nen' : 'sta'} näyttö${!isRealTime ? 'ä' : ''}`}</h3>
+      {nextBuses.length > 0 && <h3>{`Pysäkillä ${isRealTime ? 'on ' : 'ei ole '} saatavilla reaaliaikai${isRealTime ? 'nen' : 'sta'} saapumistieto${!isRealTime ? 'a' : ''}`}</h3>}
       <table>
         <thead>
           <tr>
@@ -87,7 +94,7 @@ function App() {
               Reitti
             </td>
             <td className="hideMobile">
-              Reaaliaikainen näyttö
+              Reaaliaikainen saapumistieto
             </td>
             <td>
               Aikataulun mukainen tuloaika
@@ -137,7 +144,7 @@ function App() {
                 {bus.trip.route.longName}
               </td>
               <td className="hideMobile">
-                {bus.trip.realtime ? 'KYLLÄ' : 'EI'}
+                {bus.realtime ? 'KYLLÄ' : 'EI'}
               </td>
               <td>
                 {scheduledArrival}
