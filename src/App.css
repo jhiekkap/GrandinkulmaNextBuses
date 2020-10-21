@@ -16,6 +16,10 @@
     display: none;
   }
  }
+
+table {
+  margin-top: 20px;
+}
  
 td {
    background-color: turquoise;

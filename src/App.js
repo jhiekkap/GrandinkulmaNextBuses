@@ -15,9 +15,9 @@ const allStopsQuery = gql`
 }
 `
 
-const stopQuery = (chosenStop) => gql`
+const stopQuery = (choseStopName) => gql`
 {
-  stops(name: "${chosenStop}") {
+  stops(name: "${choseStopName}") {
     gtfsId
     name
     code
@@ -50,9 +50,11 @@ const stopQuery = (chosenStop) => gql`
 
 function App() {
 
+   
   const [nextBuses, setNextBuses] = useState([]);
   //const [allStops, setAllStops] = useState([])
-  const [chosenStop, setChosenStop] = useState('Grandinkulma')
+  const [chosenStops, setChosenStops] = useState([])
+  const [chosenStopName, setChosenStopName] = useState('Grandinkulma')
 
   useInterval(() => {
     getNextBuses()
@@ -88,14 +90,15 @@ function App() {
           uri: 'https://api.digitransit.fi/routing/v1/routers/hsl/index/graphql',
         })
       });
-      const result = await client.query({ query: stopQuery(chosenStop) })
+      const result = await client.query({ query: stopQuery(chosenStopName) })
       console.log('QUERY RESULT', result.data.stops)
+      setChosenStops(result.data.stops)
       const stopTimes = result.data.stops[0].stoptimesWithoutPatterns
       setNextBuses(stopTimes)
       console.log(new Date(), 'STOP TIMES: ', stopTimes)
     } catch (error) {
       console.log('GRAPHQL ERROR', error)
-      setChosenStop('Grandinkulma')
+      setChosenStopName('Grandinkulma')
       alert('Hakemaasi pysäkkiä ei löydy')
     }
   }
@@ -113,11 +116,11 @@ function App() {
 
   return (
     <div className="App">
-      {/* <button onClick={() => getNextBuses()}>Päivitä</button> */}
+      {/* <button onClick={ => getNextBuses()}>Päivitä</button> */}
 
-      <h2>{`Pysäkin ${chosenStop}  tulo- ja lähtöajat`}</h2>
+      <h2>{`Pysäkin ${chosenStopName}  tulo- ja lähtöajat`}</h2>
       {nextBuses.length > 0 && <h3>{`Pysäkillä ${isRealTime ? 'on ' : 'ei ole '} saatavilla reaaliaikai${isRealTime ? 'nen' : 'sta'} saapumistieto${!isRealTime ? 'a' : ''}`}</h3>}
-      <table>
+      {chosenStops.map(stop => <table>
         <thead>
           <tr>
             <td>
@@ -150,7 +153,7 @@ function App() {
           </tr>
         </thead>
         <tbody>
-          {nextBuses.map((bus, i) => {
+          {stop.stoptimesWithoutPatterns.map((bus, i) => {
             const serviceDayInMs = bus.serviceDay * 1000
             //const localizedServiceDayInMs = serviceDayInMs //+ 3 * 60 * 60 * 1000
             //const localizedServiceDay1 = new Date(serviceDayInMs).toLocaleString('fi-FI')
@@ -200,13 +203,13 @@ function App() {
             </tr>
           })}
         </tbody>
-      </table>
+      </table>)}
 
       <form onSubmit={e => {
         e.preventDefault()
         console.log('SUBMITTING', e.target.name.value)
         if (e.target.name.value) {
-          setChosenStop(e.target.name.value)
+          setChosenStopName(e.target.name.value)
         }
       }}>
         <label>
