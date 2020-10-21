@@ -3,11 +3,21 @@ import './App.css';
 import { ApolloClient, HttpLink, InMemoryCache, gql } from '@apollo/client';
 import { useInterval } from './hooks';
 
-
-
-export const grandinKulmaQuery = gql`
+const allStopsQuery = gql`
 {
-  stops(name: "Sörnäinen") {
+  stops {
+    gtfsId
+    name
+    lat
+    lon
+    zoneId
+  }
+}
+`
+
+const stopQuery = (chosenStop) => gql`
+{
+  stops(name: "${chosenStop}") {
     gtfsId
     name
     code
@@ -41,10 +51,12 @@ export const grandinKulmaQuery = gql`
 function App() {
 
   const [nextBuses, setNextBuses] = useState([]);
+  //const [allStops, setAllStops] = useState([])
+  const [chosenStop, setChosenStop] = useState('Grandinkulma')
 
-   useInterval(() => {
-     getNextBuses()
-   }, 2000)
+  useInterval(() => {
+    getNextBuses()
+  }, 2000)
 
   const getTime = (date) => date.split(' ')[4];
   const delayToString = (delay) => {
@@ -56,21 +68,41 @@ function App() {
     return `${delay < 0 ? '+' : ''}${minutes}:${seconds}`
   }
 
-  const getNextBuses = async () => {
+  /* const getAllStops = async () => {
     const client = new ApolloClient({
       cache: new InMemoryCache(),
       link: new HttpLink({
         uri: 'https://api.digitransit.fi/routing/v1/routers/hsl/index/graphql',
       })
     });
-    const result = await client.query({ query: grandinKulmaQuery })
-    const stopTimes = result.data.stops[0].stoptimesWithoutPatterns
-    setNextBuses(stopTimes)
-    console.log(new Date(), 'STOP TIMES: ', stopTimes)
+    const result = await client.query({ query: allStopsQuery })
+    console.log('QUERY RESULT', result.data)
+    setAllStops(result.data.stops.map(stop => stop.name))
+  } */
+
+  const getNextBuses = async () => {
+    try {
+      const client = new ApolloClient({
+        cache: new InMemoryCache(),
+        link: new HttpLink({
+          uri: 'https://api.digitransit.fi/routing/v1/routers/hsl/index/graphql',
+        })
+      });
+      const result = await client.query({ query: stopQuery(chosenStop) })
+      console.log('QUERY RESULT', result.data.stops)
+      const stopTimes = result.data.stops[0].stoptimesWithoutPatterns
+      setNextBuses(stopTimes)
+      console.log(new Date(), 'STOP TIMES: ', stopTimes)
+    } catch (error) {
+      console.log('GRAPHQL ERROR', error)
+      setChosenStop('Grandinkulma')
+      alert('Hakemaasi pysäkkiä ei löydy')
+    }
   }
 
 
   useEffect(() => {
+    //getAllStops()
     getNextBuses()
   }, [])
 
@@ -82,7 +114,8 @@ function App() {
   return (
     <div className="App">
       {/* <button onClick={() => getNextBuses()}>Päivitä</button> */}
-      <h2>Grandinkulman pysäkin (V6121) bussien tulo- ja lähtöajat</h2>
+
+      <h2>{`Pysäkin ${chosenStop}  tulo- ja lähtöajat`}</h2>
       {nextBuses.length > 0 && <h3>{`Pysäkillä ${isRealTime ? 'on ' : 'ei ole '} saatavilla reaaliaikai${isRealTime ? 'nen' : 'sta'} saapumistieto${!isRealTime ? 'a' : ''}`}</h3>}
       <table>
         <thead>
@@ -168,6 +201,20 @@ function App() {
           })}
         </tbody>
       </table>
+
+      <form onSubmit={e => {
+        e.preventDefault()
+        console.log('SUBMITTING', e.target.name.value)
+        if (e.target.name.value) {
+          setChosenStop(e.target.name.value)
+        }
+      }}>
+        <label>
+          Kokeile toista pysäkkiä:
+        <input type="text" name="name" />
+        </label>
+        <input type="submit" value="Lähetä" />
+      </form>
     </div>
   );
 }

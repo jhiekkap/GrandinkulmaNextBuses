@@ -22,6 +22,13 @@ td {
    padding: 3px;
  }
 
+form {
+  margin-top: 20px;
+}
+
+input {
+  margin: 5px;
+}
 
 
  
