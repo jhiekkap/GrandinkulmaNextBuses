@@ -25,23 +25,14 @@ const App = () => {
       console.log('QUERY RESULT', result.data.stops)
       setChosenStops(result.data.stops)
     } catch (error) {
-      console.log('GRAPHQL ERROR', error) 
+      console.log('GRAPHQL ERROR', error)
     }
   }
 
   return (
     <div className="App">
       <h2>{`Haun ${chosenStopName}  tulo- ja lähtöajat`}</h2>
-      {chosenStops.map((stop, index) => {
-        const isRealTime = Boolean(stop.stoptimesWithoutPatterns.find(stoptime => stoptime.realtime))
-        return <TimeTable
-         key={index} 
-         index={index}
-         stop={stop} 
-         isRealTime={isRealTime}
-         hasTwoStops={chosenStops.length === 2}
-          />
-      })}
+      <TimeTable chosenStops={chosenStops} />
       <form onSubmit={e => {
         e.preventDefault()
         console.log('SUBMITTING', e.target.name.value)
