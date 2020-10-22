@@ -7,9 +7,9 @@ const TimeTable = ({ chosenStops }) => {
 
     return <div>
         {chosenStops.map((stop, s) => {
-            const isRealTime = Boolean(stop.stoptimesWithoutPatterns.find(stoptime => stoptime.realtime))
+            const isRealTime = Boolean(stop.vehicles.find(vehicle => vehicle.realtime))
 
-            return <div className='timetable'>
+            return <div className='timetable' key={s}>
                 {chosenStops.length === 2 && (s === 0 ? <ArrowForwardIcon /> : <ArrowBackIcon />)}
                 <div>{`${stop.name} ${stop.code}`}</div>
                 <table >
@@ -45,30 +45,30 @@ const TimeTable = ({ chosenStops }) => {
                         </tr>
                     </thead>
                     <tbody>
-                        {stop.stoptimesWithoutPatterns.map((bus, i) => {
-                            const serviceDayInMs = bus.serviceDay * 1000
-                            const scheduledArrival = getTime(new Date(serviceDayInMs + bus.scheduledArrival * 1000).toString())
+                        {stop.vehicles.map((vehicle, i) => {
+                            const serviceDayInMs = vehicle.serviceDay * 1000
+                            const scheduledArrival = getTime(new Date(serviceDayInMs + vehicle.scheduledArrival * 1000).toString())
                             //console.log('SCHEDULED ARRIVAL', scheduledArrival)
-                            const realtimeArrival = getTime(new Date(serviceDayInMs + bus.realtimeArrival * 1000).toString())
+                            const realtimeArrival = getTime(new Date(serviceDayInMs + vehicle.realtimeArrival * 1000).toString())
                             //console.log('REAL TIME ARRIVAL', realtimeArrival)
-                            const arrivalDelay = delayToString(bus.arrivalDelay)
+                            const arrivalDelay = delayToString(vehicle.arrivalDelay)
                             //console.log('ARRIVAL DELAY ', arrivalDelay)
-                            const scheduledDeparture = getTime(new Date(serviceDayInMs + bus.scheduledDeparture * 1000).toString())
+                            const scheduledDeparture = getTime(new Date(serviceDayInMs + vehicle.scheduledDeparture * 1000).toString())
                             //console.log('SCHEDULED DEPARTURE', scheduledDeparture)
-                            const realtimeDeparture = getTime(new Date(serviceDayInMs + bus.realtimeDeparture * 1000).toString())
+                            const realtimeDeparture = getTime(new Date(serviceDayInMs + vehicle.realtimeDeparture * 1000).toString())
                             //console.log('REAL TIME DEPARTURE', realtimeDeparture)
-                            const departureDelay = delayToString(bus.departureDelay)
+                            const departureDelay = delayToString(vehicle.departureDelay)
                             //console.log('DEPARTURE DELAY ', departureDelay)
 
                             return <tr key={i}>
                                 <td>
-                                    {bus.trip.routeShortName}
+                                    {vehicle.line}
                                 </td>
                                 <td>
-                                    {bus.trip.route.longName}
+                                    {vehicle.route}
                                 </td>
                                 <td className="hideMobile">
-                                    {bus.realtime ? 'KYLLÄ' : 'EI'}
+                                    {vehicle.realtime ? 'KYLLÄ' : 'EI'}
                                 </td>
                                 <td>
                                     {scheduledArrival}
