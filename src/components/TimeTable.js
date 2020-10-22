@@ -7,6 +7,7 @@ const TimeTable = ({ stop, isRealTime, hasTwoStops, index }) => {
 
     return <div className='timetable'>
         {hasTwoStops && (index === 0 ? <ArrowForwardIcon /> : <ArrowBackIcon />)}
+        <div>{`${stop.name} ${stop.code}`}</div>
         <table >
             <thead>
                 <tr>

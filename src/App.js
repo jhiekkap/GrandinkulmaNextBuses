@@ -25,9 +25,7 @@ const App = () => {
       console.log('QUERY RESULT', result.data.stops)
       setChosenStops(result.data.stops)
     } catch (error) {
-      console.log('GRAPHQL ERROR', error)
-      setChosenStopName('Grandinkulma')
-      alert('Hakemaasi pyjsäkkiä ei löydy')
+      console.log('GRAPHQL ERROR', error) 
     }
   }
 
