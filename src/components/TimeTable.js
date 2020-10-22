@@ -1,47 +1,47 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { getTime, delayToString } from './../utils';
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 
 const TimeTable = ({ chosenStops }) => {
 
-    return <div className='timetable'>
-        {chosenStops.map((stop, index) => {
+    return <div>
+        {chosenStops.map((stop, s) => {
             const isRealTime = Boolean(stop.stoptimesWithoutPatterns.find(stoptime => stoptime.realtime))
 
-            return <div>
-                {chosenStops.length === 2 && (index === 0 ? <ArrowForwardIcon /> : <ArrowBackIcon />)}
+            return <div className='timetable'>
+                {chosenStops.length === 2 && (s === 0 ? <ArrowForwardIcon /> : <ArrowBackIcon />)}
                 <div>{`${stop.name} ${stop.code}`}</div>
                 <table >
                     <thead>
                         <tr>
                             <td>
                                 Linja
-                    </td>
+                            </td>
                             <td>
                                 Reitti
-                    </td>
+                            </td>
                             <td className="hideMobile">
                                 Reaaliaikainen saapumistieto
-                    </td>
+                            </td>
                             <td>
                                 Aikataulun mukainen tuloaika
-                    </td>
+                            </td>
                             {isRealTime && <td>
                                 Arvioitu tuloaika
-                    </td>}
+                            </td>}
                             {isRealTime && <td>
                                 Tuloaika myöhässä
-                    </td>}
+                            </td>}
                             <td>
                                 Aikataulun mukainen lähtöaika
-                    </td>
+                            </td>
                             {isRealTime && <td>
                                 Arvioitu lähtöaika
-                    </td>}
+                            </td>}
                             {isRealTime && <td>
                                 Lähtöaika myöhässä
-                    </td>}
+                            </td>}
                         </tr>
                     </thead>
                     <tbody>

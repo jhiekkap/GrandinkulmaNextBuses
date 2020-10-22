@@ -2,9 +2,8 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import { client, stopQuery } from './utils/graphQL'
 import { useInterval } from './utils/hooks';
-
-
 import TimeTable from './components/TimeTable';
+import StopSearch from './components/StopSearch';
 
 const App = () => {
 
@@ -17,7 +16,7 @@ const App = () => {
 
   useEffect(() => {
     getNextBuses()
-  }, [])
+  }, [chosenStopName])
 
   const getNextBuses = async () => {
     try {
@@ -33,19 +32,7 @@ const App = () => {
     <div className="App">
       <h2>{`Haun ${chosenStopName}  tulo- ja lähtöajat`}</h2>
       <TimeTable chosenStops={chosenStops} />
-      <form onSubmit={e => {
-        e.preventDefault()
-        console.log('SUBMITTING', e.target.name.value)
-        if (e.target.name.value) {
-          setChosenStopName(e.target.name.value)
-        }
-      }}>
-        <label>
-          Kokeile toista pysäkkiä:
-        <input type="text" name="name" />
-        </label>
-        <input type="submit" value="Lähetä" />
-      </form>
+      <StopSearch setChosenStopName={setChosenStopName} />
     </div>
   );
 }
